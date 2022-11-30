@@ -1,0 +1,90 @@
+#!/bin/bash
+
+tabs -3
+
+function help() {
+	echo -e "eso - the stupidest editor\n"
+	echo -e "== $(tput bold)KEYBINDINGS$(tput sgr0) =="
+	echo -e "\t$(tput bold)p$(tput sgr0): print line"
+	echo -e "\t$(tput bold)i$(tput sgr0): increment line"
+	echo -e "\t$(tput bold)d$(tput sgr0): decrement line"
+	echo -e "\t$(tput bold)D$(tput sgr0): delete line"
+	echo -e "\t$(tput bold)r$(tput sgr0): replace text"
+}
+
+declare -i current_line=1
+
+if [[ $1 == "--help" ]]; then
+	help
+	exit
+else
+	FILE="${1:?No file given}"
+	if ! [[ -f $FILE ]]; then
+		echo "$FILE does not exist"
+		exit 1
+	fi
+fi
+
+echo -e "Editing File - $(file "$FILE")
+Line Count - $(wc -l < "$FILE")
+Started Editing - $(date)\n"
+
+function print_current_line() {
+	sed -n "$current_line"p "$FILE"
+}
+
+function inc_line() {
+	((current_line++))
+}
+
+function dec_line() {
+	((current_line--))
+}
+
+function cap_current_line() {
+	if [[ $current_line -gt $(wc -l < "$FILE") ]]; then
+		current_line="$(wc -l < "$FILE")"
+	fi
+	if [[ $current_line -lt 1 ]]; then
+		current_line=1
+	fi
+}
+
+while true; do
+	echo -n "[${current_line}] $(tput bold)»$(tput sgr0) "
+	read -a input
+	if [[ ${input[0]} == "p" ]]; then
+		print_current_line
+	elif [[ ${input[0]} == "i" ]]; then
+		if [[ -z ${input[1]} ]]; then
+			inc_line
+			cap_current_line
+		else
+			for i in $(seq -s ' ' "${input[1]:-0}"); do
+				inc_line
+				cap_current_line
+			done
+		fi
+	elif [[ ${input[0]} == "d" ]]; then
+		if [[ -z ${input[1]} ]]; then
+			dec_line
+			cap_current_line
+		else
+			for i in $(seq -s ' ' "${input[1]:-0}"); do
+				dec_line
+				cap_current_line
+			done
+		fi
+	elif [[ ${input[0]} == "q" ]]; then
+		echo "Bye."
+		exit 69
+	elif [[ ${input[0]} == "r" ]]; then
+		sed -i "${current_line}s/.*/$(print_current_line | sed "s/${input[1]}/${input[2]}/g")/" "$FILE"
+	elif [[ ${input[0]} == "s" ]]; then
+		grep -n --color=always "${input[1]}" "$FILE"
+	elif [[ ${input[0]} == "D" ]]; then
+		sed -i "${current_line}d" "$FILE"
+	else
+		echo "YOU DONE FUCKED UP A-A-RON!!"
+	fi
+done
