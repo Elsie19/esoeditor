@@ -87,7 +87,7 @@ while true; do
     elif [[ ${input[0]} == "r" ]]; then
         cleaned_1="$(sedable "${input[1]}")"
         cleaned_2="$(sedable "${input[2]}")"
-        sed -i "${current_line}s/.*/$(print_current_line | sed "s/${cleaned_1}/${cleaned_2}/g")/" "$FILE"
+        sed -i "${current_line}s/.*/$(print_current_line | sed "s/${cleaned_1}/${cleaned_2}/")/" "$FILE"
     elif [[ ${input[0]} == "s" ]]; then
         grep -n --color=always "${input[1]}" "$FILE"
     elif [[ ${input[0]} == "D" ]]; then
