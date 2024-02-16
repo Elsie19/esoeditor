@@ -43,10 +43,10 @@ function dec_line() {
 }
 
 function cap_current_line() {
-    if [[ $current_line -gt $(wc -l < "$FILE") ]]; then
+    if ((current_line > $(wc -l < "$FILE"))); then
         current_line="$(wc -l < "$FILE")"
     fi
-    if [[ $current_line -lt 1 ]]; then
+    if ((current_line < 1)); then
         current_line=1
     fi
 }
@@ -76,7 +76,7 @@ while true; do
             dec_line
             cap_current_line
         else
-            for i in $(seq -s ' ' "${input[1]:-0}"); do
+            for _ in $(seq -s ' ' "${input[1]:-0}"); do
                 dec_line
                 cap_current_line
             done
